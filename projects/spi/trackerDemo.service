@@ -1,0 +1,17 @@
+[Unit]
+Description=SPI Tracker Demo
+After= syslog-ng.service
+
+[Service]
+Type=simple
+User=root
+ExecStartPre=/bin/rm -f /var/run/trackerDemo.pid
+ExecStart=/root/trackerDemo /root/tracker-bbgw-demo.conf
+ExecReload=/bin/kill -HUP $MAINPID
+PIDFile=/var/run/trackerDemo.pid
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+
