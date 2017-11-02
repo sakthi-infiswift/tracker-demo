@@ -38,7 +38,7 @@
 // Needed for BROKER configuration details and general functions
 #include "GlobalConfig.h"
 #include "BBGW/GPIO/GPIO.h"
-//#include "mosquitto/mosquittoClient.h"
+#include "mosquitto/mosquittoClient.h"
 #include "log.h"
 #include "utilities/utilities.h"
 #include "project.h"
@@ -71,7 +71,7 @@ bool stowButtonIsPressed = false;	// Stow hw button
  *
  * Notes: 	Node
  **********************************************************************************************************************/
-//void *ReportToBroker_thread(void *pThread);
+void *ReportToBroker_thread(void *pThread);
 
 /**********************************************************************************************************************
  * A thread to periodically read the stow input. If the pushbutton is pressed, we toggle the stow state.
@@ -143,7 +143,7 @@ int main(int argc, char* argv[])
 	PWM_setPosition(EHRPWM1B, SERVO_ALTITUDE_START_POSITION_PWM_mSecs);
 	printf("Panel altitude initialized at %f ms.\n", SERVO_ALTITUDE_START_POSITION_PWM_mSecs);
 	sleep(1);		// Let servo move to middle positions.
-#if 0
+
 	// Create a thread for reporting to the broker
 	pthread_t ReportToBroker;
 	if (pthread_create(&ReportToBroker, NULL, ReportToBroker_thread, NULL) != 0)
@@ -151,7 +151,7 @@ int main(int argc, char* argv[])
 		printf("Could not create thread ReportToBroker_thread\n");
 	}
 	// else, successfully created the thread
-#endif
+
 	// Create a thread for monitoring the stow pushbutton
 	pthread_t MonitorStowPushbutton;
 	if (pthread_create(&MonitorStowPushbutton, NULL, MonitorStowPushbutton_thread, NULL) != 0)
@@ -286,13 +286,12 @@ int main(int argc, char* argv[])
 		usleep((unsigned int)(((unsigned long)(1e6 * PWM_UPDATE_RATE_SECONDS)) - diffTime_usec), NULL);
 	}
 
-        /*Sakthi:*/
-	//shutdownMQTT();
+	shutdownMQTT();
 
 	// Exit from Main
 	return 1;	// some error
 }
-#if 0
+
 void *ReportToBroker_thread(void *pThread)
 {
 	ErrorCode_Type error;
@@ -393,7 +392,6 @@ void *ReportToBroker_thread(void *pThread)
 		usleep((unsigned int)(((unsigned long)(1e6 * BROKER_REPORT_RATE_SECONDS)) - diffTime_usec), NULL);
 	}
 }
-#endif
 
 #define STOW_INPUT_DEBOUNCE		3
 void *MonitorStowPushbutton_thread(void *pThread)
@@ -448,9 +446,7 @@ void *MonitorStowPushbutton_thread(void *pThread)
 		}
 		// else, we're done debouncing the input change
 		previousStowInput = currentStowInput;
-		/*Sakthi : panelIsStowed line changed, have enable when mosquitto is available*/
-		panelIsStowed = stowButtonIsPressed;
-		//panelIsStowed = stowButtonIsPressed || (StowCmd_WebApp == 1) || (StowCmd_RulesEngine == 1);
+		panelIsStowed = stowButtonIsPressed || (StowCmd_WebApp == 1) || (StowCmd_RulesEngine == 1);
 
 		/* Wait until the next time to check the input.
 		 * We don't worry about counting for the time this thread takes, because:

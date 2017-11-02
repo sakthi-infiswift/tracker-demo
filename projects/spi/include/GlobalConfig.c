@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "lib/jsmn/jsmn.h"
+#include <jsmn.h>
 
 #include "log.h"
 #include "utilities/utilities.h"

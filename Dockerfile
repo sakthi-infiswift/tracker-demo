@@ -16,16 +16,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN echo "deb [arch=armhf] http://repos.rcn-ee.net/debian/ jessie main" >> /etc/apt/sources.list
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-key D284E608A4C46402
 
-RUN apt-get update && apt-get install -y build-essential
+RUN apt-get update && apt-get install -y build-essential libwebsockets-dev cmake libssl-dev uuid-dev
 
 # Enable init systemd
 ENV INITSYSTEM on
 
-COPY . /infiswift
+COPY . /tracker-demo
 
-WORKDIR /infiswift
+WORKDIR /tracker-demo
 
-
-RUN gcc -std=c11 -DPRINT_LOG_MSG -I./Common -I./hw -I./projects/spi/include -O0 -g3 -Wall -fmessage-length=0 -o projects/spi/arm-build/trackerDemo projects/spi/src/trackerDemo.c Common/utilities/utilities.c hw/BBGW/GPIO/GPIO.c projects/spi/include/*.c Common/lib/jsmn/jsmn.c -lpthread
-
-CMD ["./scripts/enablePins_runTracker.sh"]
+CMD ["./scripts/containerScript.sh"]
